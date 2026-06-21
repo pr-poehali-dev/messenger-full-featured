@@ -7,19 +7,19 @@
       "expectedStatus": 200
     },
     {
-      "name": "Reject short phone",
+      "name": "Reject empty username",
       "method": "POST",
       "path": "/",
-      "body": {"action": "send", "phone": "123"},
+      "body": {"action": "send", "username": ""},
       "expectedStatus": 400,
       "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     },
     {
-      "name": "Send code",
+      "name": "Send code to username",
       "method": "POST",
       "path": "/",
-      "body": {"action": "send", "phone": "79001234567"},
+      "body": {"action": "send", "username": "testuser_orbit"},
       "expectedStatus": 200,
       "expectedBody": {"success": true},
       "bodyMatcher": "partial"
@@ -28,7 +28,7 @@
       "name": "Verify wrong code",
       "method": "POST",
       "path": "/",
-      "body": {"action": "verify", "phone": "79001234567", "code": "0000"},
+      "body": {"action": "verify", "username": "testuser_orbit", "code": "0000"},
       "expectedStatus": 400,
       "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"

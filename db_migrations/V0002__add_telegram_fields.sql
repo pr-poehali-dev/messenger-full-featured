@@ -1,0 +1,4 @@
+ALTER TABLE phone_codes ADD COLUMN IF NOT EXISTS tg_username VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS tg_username VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS tg_id BIGINT;
+CREATE INDEX IF NOT EXISTS idx_users_tg_username ON users (tg_username);

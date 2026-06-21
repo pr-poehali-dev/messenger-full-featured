@@ -51,6 +51,7 @@ export default function Index() {
   const [screen, setScreen] = useState<Screen>('auth');
   const [tab, setTab] = useState<Tab>('chats');
   const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
   const [code, setCode] = useState(['', '', '', '']);
   const [openChat, setOpenChat] = useState<Chat | null>(null);
   const [draft, setDraft] = useState('');
@@ -58,8 +59,9 @@ export default function Index() {
   const [error, setError] = useState('');
 
   const sendCode = async () => {
-    if (phone.length < 10) {
-      setError('Введите номер полностью');
+    const uname = username.trim().replace(/^@/, '');
+    if (!uname) {
+      setError('Укажите ваш Telegram @username');
       return;
     }
     setError('');
@@ -68,7 +70,7 @@ export default function Index() {
       const res = await fetch(AUTH_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', phone: '7' + phone }),
+        body: JSON.stringify({ action: 'send', username: uname }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Не удалось отправить код');
@@ -84,6 +86,7 @@ export default function Index() {
 
   const verifyCode = async () => {
     const full = code.join('');
+    const uname = username.trim().replace(/^@/, '');
     if (full.length < 4) {
       setError('Введите код полностью');
       return;
@@ -94,7 +97,7 @@ export default function Index() {
       const res = await fetch(AUTH_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', phone: '7' + phone, code: full }),
+        body: JSON.stringify({ action: 'verify', username: uname, code: full }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Неверный код');
@@ -128,17 +131,29 @@ export default function Index() {
           <div className="glass rounded-3xl p-6">
             {screen === 'auth' ? (
               <div className="animate-fade-in">
-                <label className="text-sm font-medium text-muted-foreground">Номер телефона</label>
-                <div className="mt-2 flex items-center gap-2 bg-secondary rounded-2xl px-4 py-3.5 border border-border focus-within:border-primary transition-colors">
-                  <span className="text-foreground/80 font-medium">🇷🇺 +7</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#29a9eb]/20 flex items-center justify-center">
+                    <Icon name="Send" size={16} className="text-[#29a9eb]" />
+                  </div>
+                  <label className="text-sm font-medium text-foreground">Войти через Telegram</label>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Бот пришлёт вам код прямо в Telegram
+                </p>
+                <div className="flex items-center gap-2 bg-secondary rounded-2xl px-4 py-3.5 border border-border focus-within:border-primary transition-colors">
+                  <span className="text-muted-foreground font-semibold text-lg">@</span>
                   <input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    placeholder="900 000-00-00"
-                    inputMode="numeric"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+                    placeholder="your_username"
+                    autoComplete="off"
+                    autoCapitalize="none"
                     className="flex-1 bg-transparent outline-none text-lg placeholder:text-muted-foreground/50"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground/60 mt-2 flex items-center gap-1">
+                  <Icon name="Info" size={12} /> Сначала напишите боту /start, чтобы он мог отвечать вам
+                </p>
                 {error && <p className="text-sm text-destructive mt-3 text-center">{error}</p>}
                 <button
                   onClick={sendCode}
@@ -146,7 +161,7 @@ export default function Index() {
                   className="mt-5 w-full bg-gradient-brand animate-gradient-move text-white font-semibold py-3.5 rounded-2xl glow hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
                   {loading ? <Icon name="LoaderCircle" size={18} className="animate-spin" /> : null}
-                  {loading ? 'Отправляем...' : 'Получить код'}
+                  {loading ? 'Отправляем...' : 'Получить код в Telegram'}
                 </button>
                 <p className="text-xs text-muted-foreground/70 text-center mt-4">
                   Нажимая кнопку, вы соглашаетесь с условиями использования
@@ -159,7 +174,7 @@ export default function Index() {
                 </button>
                 <h2 className="font-display text-xl font-semibold">Введите код</h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Мы отправили код на +7 {phone || '900 000-00-00'}
+                  Бот отправил код в Telegram для <span className="text-foreground font-medium">@{username || 'you'}</span>
                 </p>
                 <div className="flex gap-3 mt-6 justify-center">
                   {code.map((d, i) => (

@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 240 30% 6%;
+    --foreground: 240 20% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 240 28% 9%;
+    --card-foreground: 240 20% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 240 28% 9%;
+    --popover-foreground: 240 20% 96%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 270 90% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 22% 14%;
+    --secondary-foreground: 240 20% 96%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 20% 16%;
+    --muted-foreground: 240 12% 62%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 190 95% 55%;
+    --accent-foreground: 240 30% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 350 90% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 22% 18%;
+    --input: 240 22% 16%;
+    --ring: 270 90% 65%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -97,5 +97,49 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv01";
   }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      110deg,
+      hsl(270 90% 70%),
+      hsl(190 95% 60%)
+    );
+  }
+  .bg-gradient-brand {
+    background-image: linear-gradient(
+      135deg,
+      hsl(270 90% 60%),
+      hsl(320 90% 60%),
+      hsl(190 95% 55%)
+    );
+    background-size: 200% 200%;
+  }
+  .glass {
+    background: hsla(240 28% 12% / 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsla(0 0% 100% / 0.06);
+  }
+  .glow {
+    box-shadow: 0 0 40px -8px hsl(270 90% 60% / 0.5);
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.bg-mesh {
+  background-color: hsl(240 30% 6%);
+  background-image:
+    radial-gradient(at 18% 12%, hsl(270 90% 30% / 0.4) 0px, transparent 50%),
+    radial-gradient(at 82% 22%, hsl(320 90% 35% / 0.3) 0px, transparent 50%),
+    radial-gradient(at 50% 92%, hsl(190 95% 30% / 0.3) 0px, transparent 50%);
 }

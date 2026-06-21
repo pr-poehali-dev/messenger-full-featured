@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 
+const AUTH_URL = 'https://functions.poehali.dev/21440e7c-bd1c-4dfe-b0c3-9bee7a214d0d';
+
 type Screen = 'auth' | 'code' | 'app';
 type Tab = 'chats' | 'calls' | 'contacts' | 'profile';
 
@@ -52,6 +54,58 @@ export default function Index() {
   const [code, setCode] = useState(['', '', '', '']);
   const [openChat, setOpenChat] = useState<Chat | null>(null);
   const [draft, setDraft] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const sendCode = async () => {
+    if (phone.length < 10) {
+      setError('Введите номер полностью');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send', phone: '7' + phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Не удалось отправить код');
+      setCode(['', '', '', '']);
+      setScreen('code');
+      if (data.debug_code) setError('Тестовый код: ' + data.debug_code);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка сети');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    const full = code.join('');
+    if (full.length < 4) {
+      setError('Введите код полностью');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify', phone: '7' + phone, code: full }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Неверный код');
+      localStorage.setItem('orbit_user', JSON.stringify(data.user));
+      setScreen('app');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка сети');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (screen === 'auth' || screen === 'code') {
     return (
@@ -85,11 +139,14 @@ export default function Index() {
                     className="flex-1 bg-transparent outline-none text-lg placeholder:text-muted-foreground/50"
                   />
                 </div>
+                {error && <p className="text-sm text-destructive mt-3 text-center">{error}</p>}
                 <button
-                  onClick={() => setScreen('code')}
-                  className="mt-5 w-full bg-gradient-brand animate-gradient-move text-white font-semibold py-3.5 rounded-2xl glow hover:scale-[1.02] active:scale-95 transition-transform"
+                  onClick={sendCode}
+                  disabled={loading}
+                  className="mt-5 w-full bg-gradient-brand animate-gradient-move text-white font-semibold py-3.5 rounded-2xl glow hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
-                  Получить код
+                  {loading ? <Icon name="LoaderCircle" size={18} className="animate-spin" /> : null}
+                  {loading ? 'Отправляем...' : 'Получить код'}
                 </button>
                 <p className="text-xs text-muted-foreground/70 text-center mt-4">
                   Нажимая кнопку, вы соглашаетесь с условиями использования
@@ -97,7 +154,7 @@ export default function Index() {
               </div>
             ) : (
               <div className="animate-fade-in">
-                <button onClick={() => setScreen('auth')} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm mb-4">
+                <button onClick={() => { setScreen('auth'); setError(''); }} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm mb-4">
                   <Icon name="ChevronLeft" size={16} /> Назад
                 </button>
                 <h2 className="font-display text-xl font-semibold">Введите код</h2>
@@ -117,18 +174,28 @@ export default function Index() {
                         setCode(next);
                         if (v && i < 3) document.getElementById(`code-${i + 1}`)?.focus();
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' && !code[i] && i > 0) {
+                          document.getElementById(`code-${i - 1}`)?.focus();
+                        }
+                      }}
                       inputMode="numeric"
                       className="w-14 h-16 text-center text-2xl font-bold bg-secondary border border-border rounded-2xl outline-none focus:border-primary focus:glow transition-all"
                     />
                   ))}
                 </div>
+                {error && <p className="text-sm text-destructive mt-4 text-center">{error}</p>}
                 <button
-                  onClick={() => setScreen('app')}
-                  className="mt-6 w-full bg-gradient-brand animate-gradient-move text-white font-semibold py-3.5 rounded-2xl glow hover:scale-[1.02] active:scale-95 transition-transform"
+                  onClick={verifyCode}
+                  disabled={loading}
+                  className="mt-6 w-full bg-gradient-brand animate-gradient-move text-white font-semibold py-3.5 rounded-2xl glow hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
-                  Подтвердить
+                  {loading ? <Icon name="LoaderCircle" size={18} className="animate-spin" /> : null}
+                  {loading ? 'Проверяем...' : 'Подтвердить'}
                 </button>
-                <p className="text-xs text-muted-foreground/70 text-center mt-4">Отправить код повторно через 0:59</p>
+                <button onClick={sendCode} disabled={loading} className="w-full text-xs text-muted-foreground/70 text-center mt-4 hover:text-foreground transition-colors">
+                  Отправить код повторно
+                </button>
               </div>
             )}
           </div>

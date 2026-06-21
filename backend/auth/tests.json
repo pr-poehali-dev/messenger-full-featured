@@ -1,0 +1,37 @@
+{
+  "tests": [
+    {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Reject short phone",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "send", "phone": "123"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send code",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "send", "phone": "79001234567"},
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Verify wrong code",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "verify", "phone": "79001234567", "code": "0000"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
